@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>View Records</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 2em;
+        }
+        form {
+            max-width: 500px;
+            margin: auto;
+            padding: 1em;
+            border-radius: 0.3em;
+            background: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        div {
+            margin-bottom: 1em;
+        }
+        label {
+            margin-bottom: 0.5em;
+            color: #333333;
+            display: block;
+        }
+        input {
+            border: 1px solid #CCCCCC;
+            padding: 0.5em;
+            font-size: 1em;
+            width: 100%;
+        }
+        button {
+            padding: 0.8em;
+            color: #FFF;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 0.5em;
+            font-size: 1.1em;
+            font-weight: bold;
+            width: 100%;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 1em;
+            padding: 1em;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.3em;
+            background: #fff;
+        }
+        .error-message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 1em;
+            text-align: center;
+        }
+        .back-button {
+            padding: 0.6em 1em;
+            color: #FFF;
+            background: #28a745;
+            border: none;
+            border-radius: 0.3em;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>View Employee Records</h1>
+        <!-- Back to Main Page button beside the title -->
+        <a th:href="@{/}" class="back-button">Back to Main Page</a>
+    </div>
+    <form th:action="@{/timetracker/view-records}" method="post">
+    <div>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" placeholder="example@example.com" required>
+    </div>
+    <div>
+        <label for="length">Number of Records:</label>
+        <input type="number" id="length" name="length" min="1" required>
+    </div>
+    <div>
+        <label for="timezone">Timezone:</label>
+        <!-- Display the detected timezone -->
+        <p id="timezone-display">Loading...</p>
+        <!-- Hidden input to send the timezone to the backend -->
+        <input type="hidden" id="timezone" name="timezone" required>
+    </div>
+    <button type="submit">Search</button>
+</form>
+
+<h2>Results:</h2>
+
+
+
+<ul>
+    <!-- Check if records attribute is present -->
+    <li th:if="${records != null} and ${#lists.isEmpty(records)}" class="error-message">
+        No data available in the database for this query.
+    </li>
+
+    <li th:each="record : ${records}">
+        <p>Email: <span th:text="${record.email}"></span></p>
+        <p>Start: <span th:text="${record.getStartString(timezone)}"></span></p>
+        <p>End: <span th:text="${record.getEndString(timezone)}"></span></p>
+    </li>
+</ul>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the user's timezone offset in minutes
+        var timezoneOffset = new Date().getTimezoneOffset();
+
+        // Convert the offset to the format +/-hh:mm
+        var offsetHours = Math.abs(Math.floor(timezoneOffset / 60));
+        var offsetMinutes = Math.abs(timezoneOffset % 60);
+        var formattedOffset = (timezoneOffset < 0 ? "+" : "-") +
+            String(offsetHours).padStart(2, "0") + ":" +
+            String(offsetMinutes).padStart(2, "0");
+
+        // Display the formatted timezone to the user
+        document.getElementById("timezone-display").textContent = formattedOffset;
+
+        // Set the hidden input value to the formatted timezone
+        document.getElementById("timezone").value = formattedOffset;
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Record</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 2em;
+        }
+        form {
+            max-width: 500px;
+            margin: auto;
+            padding: 1em;
+            border-radius: 0.3em;
+            background: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        div {
+            margin-bottom: 1em;
+        }
+        label {
+            margin-bottom: 0.5em;
+            color: #333333;
+            display: block;
+        }
+        input {
+            border: 1px solid #CCCCCC;
+            padding: 0.5em;
+            font-size: 1em;
+            width: 100%;
+        }
+        button {
+            padding: 0.7em;
+            color: #FFF;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 0.3em;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 1em;
+            text-align: center;
+        }
+        .success-message {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 1em;
+            text-align: center;
+        }
+        .back-button {
+            padding: 0.6em 1em;
+            color: #FFF;
+            background: #28a745;
+            border: none;
+            border-radius: 0.3em;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Create a New Record</h1>
+    <a th:href="@{/}" class="back-button">Back to Main Page</a>
+</div>
+
+<form th:action="@{/timetracker/create-record}" method="post">
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="example@example.com" required>
+    </div>
+    <div>
+        <label for="start">Start Time:</label>
+        <input type="datetime-local" id="start" name="start" placeholder="28.11.2016 08:00" required>
+    </div>
+    <div>
+        <label for="end">End Time:</label>
+        <input type="datetime-local" id="end" name="end" placeholder="28.11.2016 09:00" required>
+    </div>
+    <div>
+        <label for="timezone">Timezone:</label>
+        <!-- Display the detected timezone -->
+        <p id="timezone-display">Loading...</p>
+        <!-- Hidden input to send the timezone to the backend -->
+        <input type="hidden" id="timezone" name="timezone" required>
+    </div>
+    <button type="submit">Create Record</button>
+
+    <p th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></p>
+    <p th:if="${successMessage}" class="success-message" th:text="${successMessage}"></p>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the user's timezone offset in minutes
+        var timezoneOffset = new Date().getTimezoneOffset();
+
+        // Convert the offset to the format +/-hh:mm
+        var offsetHours = Math.abs(Math.floor(timezoneOffset / 60));
+        var offsetMinutes = Math.abs(timezoneOffset % 60);
+        var formattedOffset = (timezoneOffset < 0 ? "+" : "-") +
+            String(offsetHours).padStart(2, "0") + ":" +
+            String(offsetMinutes).padStart(2, "0");
+
+        // Display the formatted timezone to the user
+        document.getElementById("timezone-display").textContent = formattedOffset;
+
+        // Set the hidden input value to the formatted timezone
+        document.getElementById("timezone").value = formattedOffset;
+    });
+</script>
+
+</body>
+</html>
