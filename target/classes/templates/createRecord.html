@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="">
 <head>
     <title>Create Record</title>
     <meta charset="UTF-8">
@@ -121,6 +121,39 @@
 
         // Set the hidden input value to the formatted timezone
         document.getElementById("timezone").value = formattedOffset;
+
+        // Get the current date and time
+        const now = new Date();
+
+        // Format it to match the datetime-local format (YYYY-MM-DDTHH:MM)
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+
+        const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+        // Set the max attribute to the current date and time
+        document.getElementById('start').setAttribute('max', formattedDateTime);
+        document.getElementById('end').setAttribute('max', formattedDateTime);
+
+        const startInput = document.getElementById('start');
+        const endInput = document.getElementById('end');
+
+        // Ensure the end time is not before the start time
+        startInput.addEventListener('change', function() {
+            // Set the min attribute of the end time to the value of the start time
+            endInput.setAttribute('min', startInput.value);
+        });
+
+        // Optional: Also ensure the start time does not exceed the end time
+        endInput.addEventListener('change', function() {
+            if (endInput.value < startInput.value) {
+                // If the end time is before the start time, reset the end time to match the start time
+                endInput.value = startInput.value;
+            }
+        });
     });
 </script>
 

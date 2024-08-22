@@ -2,6 +2,7 @@ package com.timetracker.frontend.controller;
 
 import com.timetracker.frontend.model.TimeRecord;
 import com.timetracker.frontend.service.TimeTrackerService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +13,9 @@ import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Controller
@@ -35,12 +39,47 @@ public class TimeTrackerController {
 
     @PostMapping("/view-records")
     public String viewRecords(@RequestParam String email,
-                              @RequestParam int length,
                               @RequestParam String timezone,
-                              Model model) {
-        model.addAttribute("records", timeTrackerService.getRecordsByEmail(email, length));
-        model.addAttribute("timezone", timezone);
+                              Model model,
+                              HttpSession session) {
+        session.setAttribute("email", email);
+        session.setAttribute("timezone", timezone);
+        List<TimeRecord> records = timeTrackerService.getRecordsByEmail(email, 0, 5);
+        List<Map<String, String>> formattedRecords = records.stream()
+                .map(record -> {
+                    Map<String, String> formattedRecord = new HashMap<>();
+                    formattedRecord.put("email", record.getEmail());
+                    formattedRecord.put("start", record.getStartString(timezone));
+                    formattedRecord.put("end", record.getEndString(timezone));
+                    return formattedRecord;
+                })
+                .toList();
+        model.addAttribute("records", formattedRecords);
         return "viewRecords";
+    }
+
+    @GetMapping("/api/records")
+    @ResponseBody
+    public List<Map<String, String>> getRecords(@RequestParam int offset,
+                                                HttpSession session) {
+
+        String email = (String) session.getAttribute("email");
+        String timezone = (String) session.getAttribute("timezone");
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
+        List<TimeRecord> records = timeTrackerService.getRecordsByEmail(email, offset, 5);
+        List<Map<String, String>> formattedRecords = records.stream()
+                .map(record -> {
+                    Map<String, String> formattedRecord = new HashMap<>();
+                    formattedRecord.put("email", record.getEmail());
+                    formattedRecord.put("start", record.getStartString(timezone));
+                    formattedRecord.put("end", record.getEndString(timezone));
+                    return formattedRecord;
+                })
+                .toList();
+
+        return formattedRecords;
     }
 
     @GetMapping("/create-record")
@@ -66,6 +105,7 @@ public class TimeTrackerController {
             ZonedDateTime startZonedDateTime = startDateTime.atZone(zoneId);
             ZonedDateTime endZonedDateTime = endDateTime.atZone(zoneId);
 
+            // Redundant check, now the check is done as well in the frontend javascript
             // let's add a check to ensure that the start time is before the end time and that the dates are not in the future
             if (startZonedDateTime.isAfter(endZonedDateTime) || startZonedDateTime.isAfter(ZonedDateTime.now()) || endZonedDateTime.isAfter(ZonedDateTime.now())) {
                 model.addAttribute("errorMessage", "Invalid date range, please ensure that the start date is before the end date and that the dates are not in the future");

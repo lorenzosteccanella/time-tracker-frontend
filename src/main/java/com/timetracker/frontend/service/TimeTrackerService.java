@@ -16,8 +16,13 @@ public class TimeTrackerService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String apiUrl = "http://localhost:8080";
 
-    public List<TimeRecord> getRecordsByEmail(String email, int length) {
-        String url = String.format("%s/records?email=%s&length=%d", apiUrl, email, length);
+    public List<TimeRecord> getRecordsByEmail(String email, int offset, int length) {
+        String url = String.format("%s/records?email=%s&offset=%d&length=%d", apiUrl, email, offset, length);
+
+        System.out.println("Sending GET request to " + url);
+        System.out.println("email: " + email);
+        System.out.println("offset: " + offset);
+        System.out.println("length: " + length);
 
         TimeRecord[] array = restTemplate.getForObject(url, TimeRecord[].class);
 
