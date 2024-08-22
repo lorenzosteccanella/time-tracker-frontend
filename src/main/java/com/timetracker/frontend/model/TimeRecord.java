@@ -1,13 +1,9 @@
 package com.timetracker.frontend.model;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-@Getter
 public class TimeRecord {
     private String email;
     private ZonedDateTime startZoned;
@@ -35,8 +31,8 @@ public class TimeRecord {
     public String toString() {
         return "TimeRecord{" +
                 "email='" + email + '\'' +
-                ", start='" + getStartZoned() + '\'' +
-                ", end='" + getEndZoned() + '\'' +
+                ", start='" + startZoned + '\'' +
+                ", end='" + endZoned + '\'' +
                 '}';
     }
 
@@ -59,5 +55,8 @@ public class TimeRecord {
         return endZoned.withZoneSameInstant(ZoneId.of("UTC")).format(localDateTime2string);
     }
 
+    public String getEmail() {
+        return email;
+    }
 }
 
