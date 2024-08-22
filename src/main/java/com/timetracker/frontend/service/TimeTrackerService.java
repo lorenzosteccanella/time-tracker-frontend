@@ -40,8 +40,11 @@ public class TimeTrackerService {
         } else {
             // If not present in the cache, fetch from API and cache the result
             List<TimeRecord> records = fetchRecordsFromApi(email, offset, length);
-            cache.put(cacheKey, records);
-            System.out.println("Added records to cache for key: " + cacheKey);
+            // if records is not empty, add to cache
+            if (!records.isEmpty()){
+                cache.put(cacheKey, records);
+                System.out.println("Added records to cache for key: " + cacheKey);
+            }
             return records;
         }
     }
