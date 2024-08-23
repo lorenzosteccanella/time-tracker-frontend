@@ -20,8 +20,5 @@ WORKDIR /app
 # Copy the JAR file from the build stage
 COPY --from=build /app/target/timetracker-frontend-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# Expose the port the application runs on
-EXPOSE 8080
-
 # Run the JAR file
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
