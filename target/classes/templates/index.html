@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Time Tracker</title>
+    <meta charset="UTF-8">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+            color: #222;
+        }
+
+        /* Container Styles */
+        .container {
+            background: #ffffff;
+            padding: 3em;
+            border-radius: 1em;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            animation: fadeIn 1s ease-out;
+        }
+
+        /* Button Styles */
+        a {
+            display: inline-block;
+            margin: 1em 0;
+            padding: 0.8em 2em;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ffffff;
+            background: #007BFF;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+        }
+        a:hover {
+            background: #0056b3;
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        /* Subtle Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 2em;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            a {
+                padding: 0.7em 1.5em;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Welcome to Time Tracker</h1>
+    <a th:href="@{/timetracker/view-records}">View Records</a>
+    <a th:href="@{/timetracker/create-record}">Create a New Record</a>
+</div>
+</body>
+</html>

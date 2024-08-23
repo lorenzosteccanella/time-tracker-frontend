@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  timetracker-frontend:
+    image: timetracker-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - timetracker-backend
+    environment:
+      - API_URL=http://timetracker-backend:8080
+    networks:
+      - timetracker-network
+
+  timetracker-backend:
+    image: alirizasaral/timetracker:1
+    ports:
+      - "8081:8080"
+    networks:
+      - timetracker-network
+    environment:
+      - TIMETRACKER_BASE_URL=http://localhost:8080
+
+networks:
+  timetracker-network:
+    driver: bridge
