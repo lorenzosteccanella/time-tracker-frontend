@@ -58,7 +58,6 @@ public class TimeTrackerService {
         // Check if records are present in the cache
         List<TimeRecord> cachedRecords = cache.getIfPresent(cacheKey);
         if (cachedRecords != null) {
-            System.out.println("Retrieved records from cache for key: " + cacheKey);
             return cachedRecords;
         } else {
             // Fetch records from API if not in cache
@@ -66,7 +65,6 @@ public class TimeTrackerService {
             // Cache the records if they are not empty
             if (!records.isEmpty()){
                 cache.put(cacheKey, records);
-                System.out.println("Added records to cache for key: " + cacheKey);
             }
             return records;
         }
@@ -82,11 +80,6 @@ public class TimeTrackerService {
     private List<TimeRecord> fetchRecordsFromApi(String email, int offset, int length) {
         // Construct the URL for the API request
         String url = String.format("%s/records?email=%s&offset=%d&length=%d", APIURL, email, offset, length);
-
-        System.out.println("Sending GET request to " + url);
-        System.out.println("email: " + email);
-        System.out.println("offset: " + offset);
-        System.out.println("length: " + length);
 
         // Send GET request and receive response as an array of TimeRecord
         TimeRecord[] array = restTemplate.getForObject(url, TimeRecord[].class);
@@ -109,11 +102,6 @@ public class TimeTrackerService {
     public void createRecord(TimeRecord record) {
         // Construct the URL for the API request
         String url = APIURL + "/records";
-
-        System.out.println("Sending POST request to " + url);
-        System.out.println("Email: " + record.getEmail());
-        System.out.println("Start: " + DateTimeUtils.formatForPostRequest(record.getStart()));
-        System.out.println("End: " + DateTimeUtils.formatForPostRequest(record.getEnd()));
 
         // Prepare the request body as form data
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
@@ -140,6 +128,5 @@ public class TimeTrackerService {
     private void invalidateCacheForEmail(String email) {
         // Remove all cache entries where the key starts with the given email
         cache.asMap().keySet().removeIf(key -> key.startsWith(email));
-        System.out.println("Invalidated cache for email: " + email);
     }
 }
