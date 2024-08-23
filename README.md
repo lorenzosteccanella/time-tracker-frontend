@@ -62,7 +62,8 @@ Access the application at `http://localhost:8080`.
 - **Enhance Record Visualization**:
     - Refine the display of records to improve usability and aesthetics. Consider features like sorting, filtering, or better pagination instead of an infinite scroll. The current setup uses a "Load More" button to retrieve additional records.
 
-
+- **Create Unit Tests**:
+    - Add unit tests to ensure the application functions as expected and to catch any regressions.
 
 
 
