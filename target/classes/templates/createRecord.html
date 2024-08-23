@@ -147,7 +147,7 @@
             endInput.setAttribute('min', startInput.value);
         });
 
-        // Optional: Also ensure the start time does not exceed the end time
+        //Also ensure the start time does not exceed the end time
         endInput.addEventListener('change', function() {
             if (endInput.value < startInput.value) {
                 // If the end time is before the start time, reset the end time to match the start time

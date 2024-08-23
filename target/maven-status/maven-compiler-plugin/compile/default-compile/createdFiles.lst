@@ -1,4 +1,5 @@
 com/timetracker/frontend/service/TimeTrackerService.class
 com/timetracker/frontend/model/TimeRecord.class
 com/timetracker/frontend/TimetrackerFrontendApplication.class
+com/timetracker/frontend/util/DateTimeUtils.class
 com/timetracker/frontend/controller/TimeTrackerController.class

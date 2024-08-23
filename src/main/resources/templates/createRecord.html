@@ -9,6 +9,7 @@
             background-color: #f4f4f4;
             padding: 2em;
         }
+
         form {
             max-width: 500px;
             margin: auto;
@@ -17,20 +18,24 @@
             background: #f9f9f9;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         div {
             margin-bottom: 1em;
         }
+
         label {
             margin-bottom: 0.5em;
             color: #333333;
             display: block;
         }
+
         input {
             border: 1px solid #CCCCCC;
             padding: 0.5em;
             font-size: 1em;
             width: 100%;
         }
+
         button {
             padding: 0.7em;
             color: #FFF;
@@ -39,21 +44,25 @@
             border-radius: 0.3em;
             font-size: 1em;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         .error-message {
             color: #ff0000;
             font-weight: bold;
             margin-top: 1em;
             text-align: center;
         }
+
         .success-message {
             color: #28a745;
             font-weight: bold;
             margin-top: 1em;
             text-align: center;
         }
+
         .back-button {
             padding: 0.6em 1em;
             color: #FFF;
@@ -67,6 +76,7 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         .back-button:hover {
             background-color: #218838;
         }
@@ -105,7 +115,7 @@
 </form>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         // Get the user's timezone offset in minutes
         var timezoneOffset = new Date().getTimezoneOffset();
 
@@ -142,13 +152,13 @@
         const endInput = document.getElementById('end');
 
         // Ensure the end time is not before the start time
-        startInput.addEventListener('change', function() {
+        startInput.addEventListener('change', function () {
             // Set the min attribute of the end time to the value of the start time
             endInput.setAttribute('min', startInput.value);
         });
 
-        // Optional: Also ensure the start time does not exceed the end time
-        endInput.addEventListener('change', function() {
+        //Also ensure the start time does not exceed the end time
+        endInput.addEventListener('change', function () {
             if (endInput.value < startInput.value) {
                 // If the end time is before the start time, reset the end time to match the start time
                 endInput.value = startInput.value;

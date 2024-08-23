@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <title>View Records</title>
     <meta charset="UTF-8">
@@ -122,25 +122,24 @@
     </div>
     <button type="submit">Search</button>
 </form>
-
+<p>Model Data: <span th:text="${records}"></span></p>
+<p>Records: <span th:text="${records.records}"></span></p>
 <div class="results-container">
     <h2>Results:</h2>
     <ul id="record-list">
-        <li th:if="${records != null} and ${#lists.isEmpty(records)}" class="error-message">
-            No data available in the database for this query.
-        </li>
-        <li th:each="record : ${records}">
+        <li th:each="record : ${records.records}">
             <p>Email: <span th:text="${record.email}"></span></p>
             <p>Start: <span th:text="${record.start}"></span></p>
             <p>End: <span th:text="${record.end}"></span></p>
         </li>
     </ul>
-    <div class="load-more-container" th:if="${records != null and not #lists.isEmpty(records) and #lists.size(records)==5}">
+    <!-- Correctly check if there are more records to load -->
+    <div class="load-more-container" th:if="${records.hasMore}">
         <button id="load-more" class="load-more">Load More</button>
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function () {
         // Get the user's timezone offset in minutes
         var timezoneOffset = new Date().getTimezoneOffset();
@@ -157,13 +156,13 @@
         document.getElementById("timezone").value = formattedOffset;
 
         // Pagination setup
-        let offset = 5; // Start from 1 since the initial record is already loaded
-        const length = 5; // Number of records to load on each click
+        const length = 20; // Number of records to load on each click
+        let offset = parseInt('${session.offset}');
         const loadMoreButton = document.getElementById('load-more');
         const recordList = document.getElementById('record-list');
 
         loadMoreButton.addEventListener('click', function () {
-            fetch(`/timetracker/api/records?offset=${offset}`)
+            fetch(`/timetracker/api/records`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.length > 0) {
@@ -177,15 +176,11 @@
                             recordList.appendChild(li);
                         });
 
-                        // Increase the offset for the next batch
-                        offset += length;
-
                         if (data.length < length) {
                             // Hide the button if no more records are available
                             loadMoreButton.style.display = 'none';
                         }
-                    }
-                    else {
+                    } else {
                         // Hide the button if no more records are available
                         loadMoreButton.style.display = 'none';
                     }

@@ -2,27 +2,26 @@ package com.timetracker.frontend.controller;
 
 import com.timetracker.frontend.model.TimeRecord;
 import com.timetracker.frontend.service.TimeTrackerService;
+import com.timetracker.frontend.util.DateTimeUtils;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
-import java.time.ZoneId;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/timetracker")
 public class TimeTrackerController {
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+    @Value("${timetracker.length:20}")
+    private int RECORDS_LENGTH;
 
     @Autowired
     private TimeTrackerService timeTrackerService;
@@ -37,49 +36,58 @@ public class TimeTrackerController {
         return "viewRecords";
     }
 
+    private Map<String, Object> createRecordsResponse(String timezone, List<TimeRecord> records) {
+        boolean hasMore = records.size() == RECORDS_LENGTH;
+
+        List<Map<String, String>> formattedRecords = records.stream().map(record -> {
+            Map<String, String> formattedRecord = new HashMap<>();
+            formattedRecord.put("email", record.getEmail());
+            formattedRecord.put("start", DateTimeUtils.formatZonedDateTime(record.getStart(), timezone));
+            formattedRecord.put("end", DateTimeUtils.formatZonedDateTime(record.getEnd(), timezone));
+            return formattedRecord;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("records", formattedRecords);
+        response.put("hasMore", hasMore);
+
+        return response;
+    }
+
     @PostMapping("/view-records")
-    public String viewRecords(@RequestParam String email,
-                              @RequestParam String timezone,
-                              Model model,
-                              HttpSession session) {
+    public String getRecords(@RequestParam String email, @RequestParam String timezone, Model model, HttpSession session) {
         session.setAttribute("email", email);
         session.setAttribute("timezone", timezone);
-        List<TimeRecord> records = timeTrackerService.getRecordsByEmail(email, 0, 5);
-        List<Map<String, String>> formattedRecords = records.stream()
-                .map(record -> {
-                    Map<String, String> formattedRecord = new HashMap<>();
-                    formattedRecord.put("email", record.getEmail());
-                    formattedRecord.put("start", record.getStartString(timezone));
-                    formattedRecord.put("end", record.getEndString(timezone));
-                    return formattedRecord;
-                })
-                .toList();
-        model.addAttribute("records", formattedRecords);
+        session.setAttribute("offset", 0);
+
+        List<TimeRecord> records = timeTrackerService.getRecordsByEmail(email, 0, RECORDS_LENGTH);
+
+        model.addAttribute("records", createRecordsResponse(timezone, records));
+
+        // if the records are empty, display an error message
+        if (records.isEmpty()) {
+            model.addAttribute("errorMessage", "No data available in the database for this query.");
+        }
         return "viewRecords";
     }
 
     @GetMapping("/api/records")
     @ResponseBody
-    public List<Map<String, String>> getRecords(@RequestParam int offset,
-                                                HttpSession session) {
-
+    public Map<String, Object> getMoreRecords(HttpSession session) {
         String email = (String) session.getAttribute("email");
         String timezone = (String) session.getAttribute("timezone");
+
+        int offset = (int) session.getAttribute("offset");
+        offset += RECORDS_LENGTH;
+        session.setAttribute("offset", offset);
+
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Email cannot be empty");
         }
-        List<TimeRecord> records = timeTrackerService.getRecordsByEmail(email, offset, 5);
-        List<Map<String, String>> formattedRecords = records.stream()
-                .map(record -> {
-                    Map<String, String> formattedRecord = new HashMap<>();
-                    formattedRecord.put("email", record.getEmail());
-                    formattedRecord.put("start", record.getStartString(timezone));
-                    formattedRecord.put("end", record.getEndString(timezone));
-                    return formattedRecord;
-                })
-                .toList();
 
-        return formattedRecords;
+        List<TimeRecord> records = timeTrackerService.getRecordsByEmail(email, offset, RECORDS_LENGTH);
+
+        return createRecordsResponse(timezone, records);
     }
 
     @GetMapping("/create-record")
@@ -88,44 +96,23 @@ public class TimeTrackerController {
     }
 
     @PostMapping("/create-record")
-    public String createRecord(@RequestParam String email,
-                               @RequestParam String start,
-                               @RequestParam String end,
-                               @RequestParam String timezone,
-                               Model model) {
+    public String createRecord(@RequestParam String email, @RequestParam String start, @RequestParam String end, @RequestParam String timezone, Model model) {
+        try {
+            ZonedDateTime startZonedDateTime = DateTimeUtils.parseAndConvertToZonedDateTime(start, timezone);
+            ZonedDateTime endZonedDateTime = DateTimeUtils.parseAndConvertToZonedDateTime(end, timezone);
 
-        // check that the string is in the correct format
-        try{
-            LocalDateTime startDateTime = LocalDateTime.parse(start, formatter);
-            LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
-
-            // given the UTC timezone in format +HH:MM or -HH:MM convert it to ZoneId
-            ZoneId zoneId = ZoneId.of(timezone);
-
-            ZonedDateTime startZonedDateTime = startDateTime.atZone(zoneId);
-            ZonedDateTime endZonedDateTime = endDateTime.atZone(zoneId);
-
-            // Redundant check, now the check is done as well in the frontend javascript
-            // let's add a check to ensure that the start time is before the end time and that the dates are not in the future
-            if (startZonedDateTime.isAfter(endZonedDateTime) || startZonedDateTime.isAfter(ZonedDateTime.now()) || endZonedDateTime.isAfter(ZonedDateTime.now())) {
-                model.addAttribute("errorMessage", "Invalid date range, please ensure that the start date is before the end date and that the dates are not in the future");
+            if (!DateTimeUtils.validateDateRange(startZonedDateTime, endZonedDateTime)) {
+                model.addAttribute("errorMessage", "Invalid date range: start date must be before end date and dates cannot be in the future.");
                 return "createRecord";
             }
 
             TimeRecord record = new TimeRecord(email, startZonedDateTime, endZonedDateTime);
-            // add a try catch block to handle the exception
-            try {
-                timeTrackerService.createRecord(record);
-                model.addAttribute("successMessage", "Record created successfully");
-                return "createRecord";
-            } catch (Exception e) {
-                model.addAttribute("errorMessage", "An error occurred while posting the record");
-                return "createRecord";
-            }
-
-        } catch (DateTimeParseException e) {
-            model.addAttribute("errorMessage", "Invalid date format, please use the format yyyy-MM-dd'T'HH:mm");
-            return "createRecord";
+            timeTrackerService.createRecord(record);
+            model.addAttribute("successMessage", "Record created successfully");
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "An error occurred: " + e.getMessage());
         }
+
+        return "createRecord";
     }
 }

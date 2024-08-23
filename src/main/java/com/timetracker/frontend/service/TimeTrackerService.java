@@ -1,11 +1,12 @@
 package com.timetracker.frontend.service;
 
 import com.timetracker.frontend.model.TimeRecord;
+import com.timetracker.frontend.util.DateTimeUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
@@ -19,7 +20,8 @@ import java.util.stream.Collectors;
 public class TimeTrackerService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String apiUrl = "http://localhost:8080";
+    @Value("${timetracker.backend.url:http://timetracker-backend:8080}")
+    private String APIURL;
     private final Cache<String, List<TimeRecord>> cache;
 
     public TimeTrackerService() {
@@ -50,7 +52,7 @@ public class TimeTrackerService {
     }
 
     private List<TimeRecord> fetchRecordsFromApi(String email, int offset, int length) {
-        String url = String.format("%s/records?email=%s&offset=%d&length=%d", apiUrl, email, offset, length);
+        String url = String.format("%s/records?email=%s&offset=%d&length=%d", APIURL, email, offset, length);
 
         System.out.println("Sending GET request to " + url);
         System.out.println("email: " + email);
@@ -70,18 +72,18 @@ public class TimeTrackerService {
     }
 
     public void createRecord(TimeRecord record) {
-        String url = apiUrl + "/records";
+        String url = APIURL + "/records";
 
         System.out.println("Sending POST request to " + url);
         System.out.println("Email: " + record.getEmail());
-        System.out.println("Start: " + record.getStartPostReq());
-        System.out.println("End: " + record.getEndPostReq());
+        System.out.println("Start: " + DateTimeUtils.formatForPostRequest(record.getStart()));
+        System.out.println("End: " + DateTimeUtils.formatForPostRequest(record.getEnd()));
 
         // Prepare the request body
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("email", record.getEmail());
-        formData.add("start", record.getStartPostReq());
-        formData.add("end", record.getEndPostReq());
+        formData.add("start", DateTimeUtils.formatForPostRequest(record.getStart()));
+        formData.add("end", DateTimeUtils.formatForPostRequest(record.getEnd()));
 
         try {
             // Perform POST request with form data
