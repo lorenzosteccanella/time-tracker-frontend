@@ -176,9 +176,6 @@
 
         if (loadMoreButton) {
             loadMoreButton.addEventListener('click', function () {
-                // Retrieve the current offset value from the session attribute
-                const offset = parseInt('${session.offset}', 10);
-
                 // Fetch more records from the API
                 fetch(`/timetracker/api/records`)
                     .then(response => response.json())
