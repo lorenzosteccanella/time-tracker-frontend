@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"  # Expose frontend service on port 8081
+      - "8080:8080"
     depends_on:
       - timetracker-backend
     environment:
@@ -18,7 +18,7 @@ services:
   timetracker-backend:
     image: alirizasaral/timetracker:1
     ports:
-      - "8081:8080"  # Expose backend service on port 8080
+      - "8081:8080"
     networks:
       - timetracker-network
     environment:

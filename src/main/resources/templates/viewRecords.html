@@ -140,7 +140,6 @@
     <h2>Results:</h2>
     <p th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></p>
     <ul id="record-list" th:if="${records != null && records['records'] != null && records['records'].size() > 0}">
-
         <!-- Use th:each to iterate over the list of records -->
         <li th:each="record : ${records['records']}">
             <p>Email: <span th:text="${record.email}"></span></p>
